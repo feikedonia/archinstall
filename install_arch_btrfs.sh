@@ -23,7 +23,17 @@ echo "Available storage devices:"
 lsblk
 
 # Prompt for the storage device to use
-read -p "Enter the device to install Arch Linux on (e.g., /dev/sda): " dev
+echo "Enter the device you want to install Arch Linux on"
+echo "0 = exit, 1 = NVME, 2 = HDD/SSD(virtualdisk)"
+read -r disktype
+
+if [ $disktype -eq 1 ]; then
+    $nvme
+    elif [ $disktype -eq 2 ]; then
+        
+    
+  
+
 
 # Ensure the user has provided a valid device
 if [ ! -b "$dev" ]; then
@@ -48,15 +58,19 @@ encrypted_password=$(openssl passwd -6 "$password")
 
 # Partition the disk
 echo "Partitioning the disk..."
+
+
+
 parted -s "$dev" mklabel gpt
 parted -s "$dev" mkpart primary fat32 1MiB 512MiB
+parted -s "$dev" mkpart primary linux-swap 
 parted -s "$dev" set 1 esp on
 parted -s "$dev" mkpart primary btrfs 512MiB 100%
 
 # Format the partitions
 echo "Formatting the partitions..."
-mkfs.fat -F32 "${dev}1"
-mkfs.btrfs "${dev}2"
+mkfs.fat -F32 "${dev}p1"
+mkfs.btrfs "${dev}p2"
 
 # Mount the BTRFS partition and create subvolumes
 echo "Setting up BTRFS..."
